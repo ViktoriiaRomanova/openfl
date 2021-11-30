@@ -1,7 +1,3 @@
-# Detected a huge manifest, preallocating 64MB of internal memory.
-# error: Too small `loader.pal_internal_mem_size`, need at least 64MB because the manifest is large
-loader.pal_internal_mem_size = "64M"
-
 loader.preload = "file:{{ gramine.libos }}"
 libos.entrypoint = "{{ entrypoint }}"
 loader.log_level = "{{ log_level }}"
@@ -10,12 +6,17 @@ loader.env.LD_LIBRARY_PATH = "{{ python.stdlib }}/lib:/lib:{{ arch_libdir }}:/us
 loader.env.no_proxy = "{{ no_proxy }}"
 loader.env.https_proxy = "{{ https_proxy }}"
 loader.env.http_proxy = "{{ http_proxy }}"
+loader.env.SSL_CERT_DIR = "/etc/ssl/certs"
 
 loader.insecure__use_cmdline_argv = true
 
 sys.enable_sigterm_injection = true
 
 fs.start_dir="/home/user/workspace"
+
+
+# .URI - path on host
+# .PATH - pointer inside gramine
 
 fs.mount.lib.type = "chroot"
 fs.mount.lib.path = "/lib"
@@ -54,16 +55,21 @@ fs.mount.workspace.path = "/home/user/workspace"
 fs.mount.workspace.uri = "file:/home/user/workspace"
 
 fs.mount.data_folder.type = "chroot"
-fs.mount.data_folder.path = "/home/user/.openfl/data"
-fs.mount.data_folder.uri = "file:/home/user/.openfl/data"
+fs.mount.data_folder.path = "/home/user/workspace/data"
+fs.mount.data_folder.uri = "file:{{ data_folder }}"
 
 sgx.preheat_enclave = false
 
+# Detected a huge manifest, preallocating 64MB of internal memory.
+# error: Too small `loader.pal_internal_mem_size`, need at least 64MB because the manifest is large
+loader.pal_internal_mem_size = "256M"
+
 sgx.debug = true
 sgx.nonpie_binary = true
-sgx.enclave_size = "2048M"
-sys.stack.size = "2M"
-sgx.thread_num = 32
+sgx.enclave_size = "16G"
+sys.stack.size = "4M"
+sgx.thread_num = 64
+#sys.brk.max_size = "1M"
 
 sgx.trusted_files = [
   "file:{{ entrypoint }}",
@@ -82,5 +88,5 @@ sgx.allowed_files = [
   "file:/home/user/workspace/save",
   "file:/home/user/workspace/logs",
   "file:/home/user/workspace/cert",
-  "file:/home/user/.openfl/data",
+  "file:/home/user/workspace/data",
 ]

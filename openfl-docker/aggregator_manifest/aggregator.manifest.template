@@ -1,12 +1,11 @@
-# Detected a huge manifest, preallocating 64MB of internal memory.
-# error: Too small `loader.pal_internal_mem_size`, need at least 64MB because the manifest is large
-loader.pal_internal_mem_size = "64M"
-
 loader.preload = "file:{{ gramine.libos }}"
 libos.entrypoint = "{{ entrypoint }}"
 loader.log_level = "{{ log_level }}"
+#loader.log_level = "trace"
 
 loader.env.LD_LIBRARY_PATH = "{{ python.stdlib }}/lib:/lib:{{ arch_libdir }}:/usr/lib:/usr/{{ arch_libdir }}"
+
+#loader.env.SSL_CERT_DIR = "/etc/ssl/certs"
 
 loader.insecure__use_cmdline_argv = true
 
@@ -50,11 +49,17 @@ fs.mount.workspace.type = "chroot"
 fs.mount.workspace.path = "/home/user/workspace"
 fs.mount.workspace.uri = "file:/home/user/workspace"
 
+sgx.preheat_enclave = false
+
+# Detected a huge manifest, preallocating 64MB of internal memory.
+# error: Too small `loader.pal_internal_mem_size`, need at least 64MB because the manifest is large
+loader.pal_internal_mem_size = "256M"
+
 sgx.debug = true
 sgx.nonpie_binary = true
-sgx.enclave_size = "2048M"
+sgx.enclave_size = "8G"
 sys.stack.size = "2M"
-sgx.thread_num = 32
+sgx.thread_num = 64
 
 sgx.trusted_files = [
   "file:{{ entrypoint }}",
@@ -69,10 +74,8 @@ sgx.trusted_files = [
 ]
 
 sgx.allowed_files = [
-  "file:/etc/nsswitch.conf",
-  "file:/etc/group",
-  "file:/etc/passwd",
-  "file:/home/user/workspace/save",
+  "file:/etc",
   "file:/home/user/workspace/logs",
+  "file:/home/user/workspace/save",
   "file:/home/user/workspace/cert",
 ]

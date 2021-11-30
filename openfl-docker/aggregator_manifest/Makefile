@@ -26,6 +26,9 @@ aggregator.manifest: aggregator.manifest.template
 		-Darch_libdir=$(ARCH_LIBDIR) \
 		-Dentrypoint=$(shell sh -c "command -v $(PYTHON)") \
 		$< >$@
+# -Dno_proxy=$(no_proxy) \
+# -Dhttp_proxy=$(http_proxy) \
+# -Dhttps_proxy=$(https_proxy) \
 
 # gramine-sgx-sign --key /gramine/Pal/src/host/Linux-SGX/signer/enclave-key.pem --manifest aggregator.manifest --output aggregator.manifest.sgx
 aggregator.manifest.sgx: aggregator.manifest
@@ -45,7 +48,7 @@ aggregator.token: aggregator.sig
 # gramine-sgx ./aggregator main.py bar
 .PHONY: run
 run: all
-# gramine-sgx ./collaborator -c "$(cat < $(which fx))" aggregator star
+# gramine-sgx ./aggregator -c "$(cat < $(which fx))" aggregator start
 
 .PHONY: clean
 clean:

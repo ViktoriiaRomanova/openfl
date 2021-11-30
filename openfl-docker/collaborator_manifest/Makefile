@@ -5,6 +5,7 @@ ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 # In this case we have a key inside the container
 SGX_SIGNER_KEY ?= /var/gramine/Pal/src/host/Linux-SGX/signer/enclave-key.pem
 PYTHON ?= $(shell sh -c "command -v python3.8")
+DATA_FOLDER ?= /home/user/workspace/data
 
 ifeq ($(DEBUG),1)
 GRAMINE_LOG_LEVEL = debug
@@ -27,6 +28,7 @@ collaborator.manifest: collaborator.manifest.template
 		-Dno_proxy=$(no_proxy) \
 		-Dhttp_proxy=$(http_proxy) \
 		-Dhttps_proxy=$(https_proxy) \
+		-Ddata_folder=$(DATA_FOLDER) \
 		-Dentrypoint=$(shell sh -c "command -v $(PYTHON)") \
 		$< >$@
 
