@@ -177,6 +177,8 @@ def _derive_opt_state_dict(opt_state_dict):
                     )
                 derived_opt_state_dict[f'__opt_state_{group_idx}_{idx}_{tag}_{subkey}'] = new_v
         nb_params_per_group.append(idx + 1)
+        # Add 'lr' at the state dict (put idx == 0 as 'lr' is common for the whole group)
+        derived_opt_state_dict[f'__opt_state_{group_idx}_0__lr'] = np.array(group['lr'])
     # group lengths are also helpful for reconstructing
     # original opt_state_dict structure
     derived_opt_state_dict['__opt_group_lengths'] = np.array(
@@ -228,15 +230,20 @@ def expand_derived_opt_state_dict(derived_opt_state_dict, device):
             opt_state_dict['state'][this_id] = {}
             for subkey, tag in state_subkeys_and_tags:
                 flat_key = f'__opt_state_{this_id}_{tag}_{subkey}'
-                if tag == 'istensor':
-                    new_v = pt.from_numpy(derived_opt_state_dict.pop(flat_key))
-                else:
-                    # Here (for currrently supported optimizers) the subkey
-                    # should be 'step' and the length of array should be one.
-                    assert subkey == 'step'
-                    assert len(derived_opt_state_dict[flat_key]) == 1
-                    new_v = int(derived_opt_state_dict.pop(flat_key))
-                opt_state_dict['state'][this_id][subkey] = new_v
+                if subkey != 'lr':
+                    if tag == 'istensor':
+                        new_v = pt.from_numpy(derived_opt_state_dict.pop(flat_key))
+                    else:
+                        # Here (for currrently supported optimizers) the subkey
+                        # should be 'step' and the length of array should be one.
+                        assert subkey == 'step'
+                        assert len(derived_opt_state_dict[flat_key]) == 1
+                        new_v = int(derived_opt_state_dict.pop(flat_key))
+                    opt_state_dict['state'][this_id][subkey] = new_v
+                elif this_id.endswith('_0'):
+                    # Add parameter lr at the current param_groups
+                    new_v = float(derived_opt_state_dict.pop(flat_key))
+                    opt_state_dict['param_groups'][-1].update({'lr': new_v})
 
     # sanity check that we did not miss any optimizer state
     assert len(derived_opt_state_dict) == 0, str(derived_opt_state_dict)
